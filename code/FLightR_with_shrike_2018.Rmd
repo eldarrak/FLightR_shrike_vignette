@@ -87,6 +87,7 @@ Calibration.periods<-data.frame(
 		# (e. g.,  lon=c(5.43, 6.00), lat=c(52.93,52.94))
 print(Calibration.periods)
 ```
+
 ** Please carefully look at the data.frame you have created!** The first column should contain dates of the calibration start and the second - ends of the calibration periods.
 
 In this example, we have two calibration periods in the same location, at the beginning and at the end of the track. This is a common case, as the birds are often recaptured at the same location, where they were tagged. 
