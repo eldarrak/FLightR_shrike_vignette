@@ -144,7 +144,7 @@ This object contains all the calibration parameters for the tag, and it will be 
 The exact period of a tagged animal's stay in a known location is usually unknown, but it can be derived from the data. For this, calibration slopes for the sunset and sunrise of each day of the tracking period are calculated, based on the assumption that the tag remained in the same known position all the time. The slopes are calculated and plotted with the function `plot_slopes_by_location`.
 
 ```{r}
-plot_slopes_by_location(Proc.data=FLightR.data, location=c(12.23, 55.98))
+plot_slopes_by_location(Proc.data=FLightR.data, location=c(12.23, 55.98), ylim=c(-1.5, 1.5))
 
 abline(v=as.POSIXct("2015-05-15")) # end of first calibration period
 abline(v=as.POSIXct("2014-07-15")) # start of the second calibration period
@@ -263,7 +263,7 @@ Presenting your results, you may arbitrarily choose the most adequate (repeatabl
 Our shrike had rather distinct migration/stopover pattern. However, we get a slightly more stopovers with cut-off probabilities of 0.1 and 0.2.
 
 To distinguish between the phases of  movement and stationarity use the function `stationary.migration.summary` helps . The process usually takes around 15 minutes of computer time.
-
+```{r}
 if (Run_everything) {
    Summary<-stationary.migration.summary(Result, prob.cutoff = 0.2)
    saveRDS(Summary, file='./results/Summary.RDS')
