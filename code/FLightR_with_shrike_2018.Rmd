@@ -9,8 +9,49 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
 # FLightR analysis example of red-backed shrike geolocator data
+
+
+## 0. Set up output and run options
+```{r}
+set.seed(123)
+```
+### 0.1 To run or to load?
+Parts of this code take time to run, so if you want to go through examples fast and do not want to install all the software
+```{r}
+Run_everything=FALSE # Change to TRUE if you want run everything by your computer
+```
+
+### 0.2 Online or local data?
+This script can operate with online or local data. If `Use_local_data` set to TRUE working directory expected to have folders `data`. If `Run_everything` set to TRUE `results` directory will be created and all results will be saved there.
+```{r}
+Use_local_data=FALSE # Change to TRUE if you want to use local data
+```
+
+### 0.3 Checks and downloads 
+```{r}
+if (Use_local_data) {
+   if (!'results' %in% list.dirs(full.names=FALSE, recursive=FALSE)) {
+       if (Run_everything) {
+          dir.create('results')
+	   } else {
+	      stop('results directory not found!')
+	   }
+   } 
+   if (!'data' %in% list.dirs(full.names=FALSE, recursive=FALSE)) stop('data directory not found!')
+} else {
+   if (!'results' %in% list.dirs(full.names=FALSE, recursive=FALSE)) dir.create('results')
+   download.file('https://git.io/vXAZ1', destfile='./results/Result.RDS', mode='wb')
+   download.file('https://git.io/vXgZG', destfile='./results/migration_model.RDS', mode='wb')
+   download.file('https://git.io/vXED0', destfile='./results/Arrivals_migration_model.csv')
+   download.file('https://git.io/vXgvv', destfile='./results/fuelling_model.RDS',mode='wb')
+   download.file('https://git.io/v7D8z', destfile='./results/phenology_SEM.RDS',mode='wb')
+   download.file('https://git.io/vXEbX', destfile='./results/Arrival_weights.csv')
+   download.file('https://git.io/vXEb5', destfile='./results/Fuelling_slopes.csv')
+   download.file('https://git.io/vXueC', destfile='./results/survival_result.RDS',mode='wb')
+   download.file('https://git.io/vXuqH', destfile='./results/Mauritania_counts_model.RDS',mode='wb')
+}
+if (Use_local_data & !'data' %in% list.dirs(full.names=FALSE, recursive=FALSE)) stop('data directory not found') 
 
 ## Install package
 Note that we used FLightR 0.4.7 version, and running this example in later versions may provide somehow different results.
@@ -19,7 +60,7 @@ To install the latest CRAN version try
 install.packages('FLightR')
 ```
 To run version 0.4.7 which we use in this example try 
-```{r, eval = F}
+```{r}
 library(devtools)
 install_github('eldarrak/FLightR@0.4.7')
 ```
