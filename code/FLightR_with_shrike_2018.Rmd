@@ -274,6 +274,26 @@ if (Run_everything) {
 To visualise results of this function we will plot them on a map.
 
 ```{r}
+# Now we want to plot the detected stationary periods on a map
+Summary$Stationary.periods$stopover_duration<-as.numeric(difftime(Summary$Stationary.periods$Departure.Q.50,Summary$Stationary.periods$Arrival.Q.50, units='days'))
+# Now I want to select the periods which were >=2 days and 
+Main_stopovers<-Summary$Stationary.periods[is.na(Summary$Stationary.periods$stopover_duration) | Summary$Stationary.periods$stopover_duration>=2,]
+# delete breeding season
+Main_stopovers<-Main_stopovers[-which(is.na(Main_stopovers$stopover_duration)),]
+
+Coords2plot<-cbind(Result$Results$Quantiles$Medianlat, Result$Results$Quantiles$Medianlon)
+
+for (i in 1:nrow(Summary$Potential_stat_periods)) {
+  Coords2plot[Summary$Potential_stat_periods[i,1]:
+    Summary$Potential_stat_periods[i,2],1] =  
+    Summary$Stationary.periods$Medianlat[i]
+   
+  Coords2plot[Summary$Potential_stat_periods[i,1]:
+    Summary$Potential_stat_periods[i,2],2] =  
+    Summary$Stationary.periods$Medianlon[i]
+}
+Coords2plot<-Coords2plot[!duplicated(Coords2plot),]
+
 library(maps)
 library(mapdata)
 
