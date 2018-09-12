@@ -44,8 +44,9 @@ if (Use_local_data) {
    download.file('https://git.io/fAKZH', destfile='./results/Result.RDS', mode='wb')
 }
 if (Use_local_data & !'data' %in% list.dirs(full.names=FALSE, recursive=FALSE)) stop('data directory not found') 
+```
 
-## Install package
+### 0.4 Install package
 Note that we used FLightR 0.4.7 version, and running this example in later versions may provide slightly different results.
 To install the latest CRAN version try
 ```{r, eval = F}
@@ -77,9 +78,7 @@ FLightR works with files of the ‘TAGS’ format, which are CSV files containin
 The fields `excluded` and `interp` may have values of `TRUE` only for `twilight > 0`. 
 The online service http://tags.animalmigration.org saves data in the TAGS format. In the R packages GeoLight and BAStag or twGeos, the annotated twilight data need to be exported to TAGS, for which the functions in the FLightR (`GeoLight2TAGS`,  `BAStag2TAGS` or `twGeos2TAGS`) can be used.
 
-We will use the TAGS formatted data provided as by Pedersen et al.:
-
-_We need reference to Lykke here_
+We will use the TAGS formatted data based on the original .lux file from [Pedersen et al.](#Pedersen_et_al).
 
 The original file is available [here](https://git.io/fAoHq) and the annotated file in tags format [here](https://git.io/fAoHs).
 
@@ -342,5 +341,6 @@ plot_util_distr(Result,
 1. Ekstrom, P. (2007). Error measures for template-fit geolocation based on light. Deep Sea Research Part II: Topical Studies in Oceanography, 54, 392–403.<a id="ekstrom_2007"></a>
 1. Lisovski, S., Hahn, S. & Hodgson, D. (2012a). GeoLight - processing and analysing light-based geolocator data in R. Methods in Ecology and Evolution, 3, 1055–1059.<a id="lisovski_2012b"></a>
 1. Lisovski, S., Hewson, C.M., Klaassen, R.H.G., Korner-Nievergelt, F., Kristensen, M.W. & Hahn, S. (2012b). Geolocation by light: accuracy and precision affected by environmental factors. Methods in Ecology and Evolution, 3, 603–612.<a id="lisovski_2012a"></a>
+1. Pedersen L., et. al. <a id="pedersen_et_al"></a>
 1. Rakhimberdiev, E., Winkler, D.W., Bridge, E., Seavy, N.E., Sheldon, D., Piersma, T. & Saveliev, A. (2015). A hidden Markov model for reconstructing animal paths from solar geolocation loggers using templates for light intensity. Movement Ecology, 3, 25.<a id="rakhimberdiev_movecol_2015"></a>
 1. Rakhimberdiev, E., Senner, N. R., Verhoeven, M. A., Winkler, D. W., Bouten, W. and Piersma T. (2016) Comparing inferences of solar geolocation data against high-precision GPS data: annual movements of a double-tagged Black-Tailed Godwit. - Journal of Avian Biology 47: 589-596.<a id="rakhimberdiev_jab_2016"></a>
