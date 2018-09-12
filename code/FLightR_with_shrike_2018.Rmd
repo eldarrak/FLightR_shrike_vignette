@@ -92,7 +92,7 @@ The function `get.tags.data` reads comma separated file in the TAGS format, dete
 
 The finction works with all the common tag types: mk tags (produced by British Antarctic Survey, Lotek, and Migrate Technology Ltd.), Intigeo tags (Migrate technology Ltd.) and GDL tags (Swiss Ornithological Institute).
 ```{r, tidy=FALSE}
-if (use_local_data) {
+if (Use_local_data) {
    FLightR.data<-get.tags.data("./data/TAGS.M034_08jun15_135409driftadj.csv")
 } else {
    FLightR.data<-get.tags.data("https://git.io/fAoHs")
