@@ -41,15 +41,7 @@ if (Use_local_data) {
    if (!'data' %in% list.dirs(full.names=FALSE, recursive=FALSE)) stop('data directory not found!')
 } else {
    if (!'results' %in% list.dirs(full.names=FALSE, recursive=FALSE)) dir.create('results')
-   download.file('https://git.io/vXAZ1', destfile='./results/Result.RDS', mode='wb')
-   download.file('https://git.io/vXgZG', destfile='./results/migration_model.RDS', mode='wb')
-   download.file('https://git.io/vXED0', destfile='./results/Arrivals_migration_model.csv')
-   download.file('https://git.io/vXgvv', destfile='./results/fuelling_model.RDS',mode='wb')
-   download.file('https://git.io/v7D8z', destfile='./results/phenology_SEM.RDS',mode='wb')
-   download.file('https://git.io/vXEbX', destfile='./results/Arrival_weights.csv')
-   download.file('https://git.io/vXEb5', destfile='./results/Fuelling_slopes.csv')
-   download.file('https://git.io/vXueC', destfile='./results/survival_result.RDS',mode='wb')
-   download.file('https://git.io/vXuqH', destfile='./results/Mauritania_counts_model.RDS',mode='wb')
+   download.file('https://git.io/fAKZH', destfile='./results/Result.RDS', mode='wb')
 }
 if (Use_local_data & !'data' %in% list.dirs(full.names=FALSE, recursive=FALSE)) stop('data directory not found') 
 
@@ -92,6 +84,9 @@ _We need reference to Lykke here_
 The original file is available [here](https://git.io/fAoHq) and the annotated file in tags format [here](https://git.io/fAoHs).
 
 ```{r, eval=FALSE, tidy=FALSE}
+if (Use_local_data) {
+
+)
 download.file('https://git.io/fAoHs', 'shrike_data_TAGS_format.csv')
 
 ```
@@ -104,7 +99,11 @@ The function `get.tags.data` reads comma separated file in the TAGS format, dete
 
 The finction works with all the common tag types: mk tags (produced by British Antarctic Survey, Lotek, and Migrate Technology Ltd.), Intigeo tags (Migrate technology Ltd.) and GDL tags (Swiss Ornithological Institute).
 ```{r, eval=FALSE, tidy=FALSE}
-FLightR.data<-get.tags.data("shrike_data_TAGS_format.csv")
+if (use_local_data) {
+   FLightR.data<-get.tags.data("./data/TAGS.M034_08jun15_135409driftadj.csv")
+} else {
+   FLightR.data<-get.tags.data("https://git.io/fAoHs")
+}
 ```
  
 ## 2. Calibration
@@ -137,7 +136,13 @@ When multiple calibration locations are available, each of them has to be proces
 
 A 'Calibration' object is compiled with the function`make.calibration` from the created `Calibration periods` data frame and the `Proc.data` object. 
 ```{r, eval = F}
-Calibration<-make.calibration(FLightR.data, Calibration.periods, model.ageing=TRUE)
+if (run_everything) {
+    Calibration<-make.calibration(FLightR.data, Calibration.periods, model.ageing=TRUE)
+} else {
+    Result<-readRDS(file='./results/Result.RDS')
+    Calibration<-Result[[3]]
+    rm(Result)
+}
 ```
 This object contains all the calibration parameters for the tag, and it will be further used for calculation of geographic positions across the track. When there are more than one calibration periods, the parameter `model.ageing` can be set `TRUE` to account for the tag ageing. In this case, the calibration parameters are calculated, based on the assumption that the calibration slope changes linearly with time. Alternatively - one can use one very long calibration perid to try estimating ageing of the tag. We would reccommend to have at least two months in a known location to be able to do that.
 
@@ -197,8 +202,16 @@ Using masks can side track model estimation to the local minima, and we recommen
 At this stage, all the objects, created at earlier steps: the light data with the detected twilight events (`FLightR.data`), the spatial parameters (`Grid`), geographic coordinates of the initial location, where the tracking has started (`start`), and the calibration parameters (`Calibration`), are to be incorporated in one complex object , which will be used in the main run. Use the function `make.prerun.object` for the compilation. Using this function you can also change the priors for the movement model. For example we set `M.mean` parameter to 750 km, because we know that shrikes migrate fast and also because we have explored the results and figured out that average migration distance was actually 750 km.
 
 ```{r, eval = F}
-# ~ 15 min run time
-all.in<-make.prerun.object(FLightR.data, Grid, start=c(12.23, 55.98), Calibration=Calibration, M.mean=750)
+if (run_everything) {
+   # ~ 15 min run time
+   all.in<-make.prerun.object(FLightR.data, Grid, start=c(12.23, 55.98),
+                              Calibration=Calibration, M.mean=750)
+} else {
+    Result<-readRDS(file='./results/Result.RDS')
+    all.in<-Result[-c(5,6)]
+    rm(Result)
+}                              
+
 ```
 ## 5. Particle filter run
 
@@ -217,7 +230,8 @@ Within `run.particle.filter`, the following parameters can be defined:
 # `b` - the maximum distance allowed to be travelled between two subsequent twilights.
 
 
-```{r, eval = F}
+```{r}
+if (run_everything) {
 nParticles=1e6
 
 
@@ -225,9 +239,11 @@ Result<-run.particle.filter(all.in, threads=-1,
             nParticles=nParticles, known.last=TRUE,
 		    precision.sd=25, check.outliers=F, 
             b=1700)
-save(Result, file="./results/Result_1e6_long_calibration_model_ageing.RData")
+    saveRDS(Result, file='./results/Result.RDS')
+} else {
+    Result<-readRDS(file='./results/Result.RDS')
+}
 ```
-Now the results are saved as an RData object.
 
 ## 6. First exploration - plot longitude and latitude
 
@@ -299,7 +315,7 @@ points(x=12.23, y=55.98, cex=6, pch=21 , bg=Seasonal_colors[6])
 
 The function `find.times.distribution` derives the time at which an animal arrived or departed from the area and provides the measure of its uncertainty. First, select grid points of interest. For example in the current data we are interested in the date when our bird left from the breding grounds and when it was back. We will make  a boundary at 55.5&deg latitude:
 ```{r, eval = F}
-Index<-which(Result$Spatial$Grid[,2]>(55))
+Index<-which(Result$Spatial$Grid[,2]>55)
 ```
 Estimate probabilities of occurrence within the area at each twilight:
 ```{r, eval = F}
