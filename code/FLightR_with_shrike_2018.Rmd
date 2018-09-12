@@ -181,19 +181,20 @@ _Note that this function is experimental and does not always produce meaningful 
 ## 3. Assign spatial extent
 
 Before running the model you will have to make a scientific guess on where you expect your bird to fly and assign a spatial grid (50 X 50 km) with user-defined boundaries, within which your model will calculate probabilities of presence of the birds. The wider you set the grid boundaries,the longer will take the model to run. If you have set the boundaries too narrow, you will see it in the output map: the defined location points will bounce close to the grid boundaries (as in our example XXXX). In this case you will have to extend the grid and re-run the model.  
-To set up the grid use the function `make.grid`   delimited by user-defined boundaries: `left`, `right`. `bottom` and `top`. When the tagged animal cannot occur or stay between two subsequent twilights over particular areas, e.g. open water for a landbird or deep inland for a marine animal, additional parameters `distance.from.land.allowed.to.use` and `distance.from.land.allowed.to.stay` can be specified. Each of the parameters require a vector of two numbers: the minimal and the maximal distances (in km) from shoreline, at which the animal is allowed to occur/stay.
-In the current case we want to allow our shrike to fly over water (no further than 200 km offshore and to be statuionary within 50 km from land).
+To set up the grid use the function `make.grid` and define the boundaries: `left`, `right`. `bottom` and `top`. It is possible that your tagged animal cannot occur or stay between two subsequent twilights over particular areas, for example, over open water if it is a landbird or deep inland if it is a marine animal. In this case we recommend to apply additional parameters `distance.from.land.allowed.to.use` and `distance.from.land.allowed.to.stay`. Such restrictions will  minimize the area processed and this way facilitate the analysis. Each of the parameters require a vector of two numbers: the minimal and the maximal distances (in km) from shoreline, at which the animal is allowed to occur/stay. The numbers can be negative. For instance, distance.from.land.allowed.to.stay=-30, will not allow your bird to stay further than 30 km inland from the shore. 
+In our example we allow our shrike to fly over the water, but not further than 200 km offshore, and to be statuionary within 50 km from the land.
 ```{r}
 Grid<-make.grid(left=5, bottom=-33, right=50, top=60,
    distance.from.land.allowed.to.use=c(-Inf, 200),
    distance.from.land.allowed.to.stay=c(-Inf, 50))
 ```
-The function produces an visual represnetation of the created grid with orange poins where bird is allowed to be stationary and grey, where bird can fly but not stay. Have a look at the figure and think twice if you gris is correct.
-The resulting `Grid` is a matrix with the columns: `lon` (longitude), `lat` (latitude) and `Stay` (probability of stay). The grid cells, which the animal presumably cannot use, are excluded from the data, while the locations at which an animal cannot be stationary are given a low probability of stay. Using masks can side track model estimation to the local minima, and we recommend to initially run model without a mask, enable them for the second run and visually compare the results, to see if the model converges to a similar track.
+The resulting `Grid` is a matrix with the columns: `lon` (longitude), `lat` (latitude) and `Stay` (probability of stay). Grid cells that presumably cannot be visited by the animal are excluded from the data, while the locations at which an animal cannot be stationary are given a low probability of stay. The function produces a visual representation of the created grid with orange poins where the bird is allowed to be stationary and grey, where the bird can fly but not stay. Have a look at the figure and make sure it is correct.
+Using masks can side track model estimation to the local minima, and we recommend to initially run the model without the mask, enable the mask for the second run and visually compare the results to see if the model has converged to similar tracks.
+
 
 ## 4. Prepare the model for run
 
-The function `make.prerun.object` creates a complex object, which will be used in the main run. It incorporates all the objects, created at earlier steps: the light data with the detected twilight events (`FLightR.data`), the spatial parameters (`Grid`), geographic coordinates of the initial location, where the tracking has started (`start`), and the calibration parameters (`Calibration`). Here one can also change the priors for the movement model. For example we set `M.mean` parameter to 750 km, because we know that shrikes migrate fast and also because we have explored the results and figured out that average migration distance was actually 750 km.
+At this stage, all the objects, created at earlier steps: the light data with the detected twilight events (`FLightR.data`), the spatial parameters (`Grid`), geographic coordinates of the initial location, where the tracking has started (`start`), and the calibration parameters (`Calibration`), are to be incorporated in one complex object , which will be used in the main run. Use the function `make.prerun.object` for the compilation. Using this function you can also change the priors for the movement model. For example we set `M.mean` parameter to 750 km, because we know that shrikes migrate fast and also because we have explored the results and figured out that average migration distance was actually 750 km.
 
 ```{r, eval = F}
 # ~ 15 min run time
@@ -201,17 +202,25 @@ all.in<-make.prerun.object(FLightR.data, Grid, start=c(12.23, 55.98), Calibratio
 ```
 ## 5. Particle filter run
 
-At this stage, the model output is generated. It contains: a table of positions at each twilight (`$Results$Quantiles`) and their statistics (mean, median values and credible intervals), a table of parameters of the movement model (`$Results$Movement.results`) and posterior distribution at every twilight (`$Results$Points.rle`) and at every transition between twilights (`$Results$Transitions.rle`). 
+Once you have got the "run.particle.filter" running, expect your computer to be busy for about 45 minutes. During this time it will generate the model output (we will call it "Results") containing: 
+* a table of positions at each twilight (`$Results$Quantiles`), 
+* statistics of the positions (mean, median values and credible intervals), 
+* a table of parameters of the movement model (`$Results$Movement.results`),
+* posterior distribution of the parameters at every twilight (`$Results$Points.rle`) and 
+* at every transition between twilights (`$Results$Transitions.rle`). 
+
 Within `run.particle.filter`, the following parameters can be defined: 
-* `nParticles` - number of particles (1e4 is recommended for test and 1e6 for the analysis);
+* `nParticles` - number of particles (we recommend to use 1e4 for test and 1e6 for the analysis);
 * `threads` - amount of parallel threads to use for the run default is -1 that means all available except one;
 * `known.last` - TRUE if you know that in the end of the logging period tag occurred in a known place (FALSE is the default option);
-* `check.outliers` – FALSE by default. Set it TRUE if you wish on a fly outliers detection, we recommend to use it if the results have strong outliers.
-# `b` - the maximum distance allowed to be travelled between two consequtive twiloghts.
+* `check.outliers` – FALSE by default. Set it to TRUE if you wish on-the-fly outliers detection, highly recommended if the results have strong outliers.
+# `b` - the maximum distance allowed to be travelled between two subsequent twilights.
+
 
 ```{r, eval = F}
 nParticles=1e6
-# ~ 45 min run time
+
+
 Result<-run.particle.filter(all.in, threads=-1,
             nParticles=nParticles, known.last=TRUE,
 		    precision.sd=25, check.outliers=F, 
@@ -222,26 +231,38 @@ Now the results are saved as an RData object.
 
 ## 6. First exploration - plot longitude and latitude
 
-After the analysis finished and results are save the first thing to do is to plot change of longitude and latitude over time. We concider this graph being the most important.
+After the results are saved the first thing to do is to plot change of longitude and latitude over time. We concider this graph being the most important.
 
 ```{r, eval = F}
 plot_lon_lat(Result)
 ```
 With this graph, please, carefully check whether:
-1. Your track never approaches the edge of the spatial grid you defined. If this is the case, change spatial extend and rerun the analysis.
-2. There is no sudden jumps that have no uncertainty measurements around them. These are likely outliers that should be excluded befoirehand.
-3. Your resulting estiamates of time at the calibration site match the result. If not, correct the calibration periods and do the calibration again.
-4. There is no S-shape patterns in estimated latitude around equinox. These point at either bad calibration or very bad data. Try to improve your calibration periods or concider takeing calibratio data from the other tag of the smae species.
+1. Your track does not approach boundaries of the spatial grid you defined (you ave to keep those in mind assessing the graph). If this is the case, change spatial extend and rerun the analysis.
+2. There are no sudden jumps that have no uncertainty measurements around them. These are likely outliers that should be excluded beforehands.
+3. Presented by the model estiamates of time-periods spent by the bird at the calibration site match calibration periods assigned before the model run. If they do not, correct the calibration periods, redo the calibration and rerun the model.
+4. There are no S-shape patterns in estimated latitude around equinox. Such patterns point at either incorrect calibration or very poor data. Try to improve your calibration periods or concider taking calibration data from another tag taken from the same species.
 
 ## 7. Summary
 
-Function `stationary.migration.summary` tries to distinguish when and where the bird was stationary and when did it move.
+###Repeatability of output
+
+Note that however many times you will re-run the model with the same input parameters, you will never get the same output. Please, ***do not panic***, as stochasticity of probabilities is an inherent feature of Bayesian analysis. Also, if you look closer at your results, you will notice that the outputs vary within each others’ standard errors.
+
+###Defining stopovers
+
+FLightR is honest defining stopovers, which may seem a disappointing feature, but it makes us thinking. In general, geolocation analysis is all about how likely the bird was present in specific location at specific moment and how likely it was moving between two subsequent locations. It is not a problem when you work with long-distance migrants, such as bar-tailed godwit (***REF***), since it has very apparent stopover phases between apparent migration-flight bouts. However, many bird species migrate in little hops and literary stop “at every bush”. Here you can get rather messy results, due to the overlapping probability distributions. 
+In any case, we recommend to play with the stopover probabilities by tweaking the cut-off probability parameter (function stationary.migration.summary). Recall that for each location and time moment the model generates a probability that the bird was moving to the next location. The cut-off probability is the minimal threshold probability of movement, at which we assume that the bird was actually moving. Depending on the assigned cut-off probability parameter, the model will consider the bird more or less likely to be stationary. 
+In birds migrating in long leaps with few stops, defined stopovers are usually rather robust. However, in hopping migrants, probabilities of stopovers may vary, depending on the chosen cut-off probability parameter, which is a bad news if describing stopovers is the prior goal of your study.  But, frankly speaking, what is stopover and does it exist in migrants moving in short hops?
+Presenting your results, you may arbitrarily choose the most adequate (repeatable) output and mention the cut-off probability, with which it was obtained. However, if you want to describe stopovers explicitly, you might want to present outputs obtained with several cut-off probability parameters and speculate about the variation. Most likely, some of your stopovers will be defined repeatedly with a range of cut-off parameters being assigned, and some will be less robust. 
+Our shrike had rather distinct migration/stopover pattern. However, we get a slightly more stopovers with cut-off probabilities of 10 and 20.
+
+To distinguish between the phases of  movement and stationarity use the function `stationary.migration.summary` helps . The process usually takes around 15 minutes of computer time.
 
 ```{r, eval=FALSE}
-# ~ 45 min run time
+
 Summary<-stationary.migration.summary(Result, prob.cutoff = 0.2)
 ```
-To visualise results of this function we will plot them over a map:
+To visualise results of this function we will plot them on a map:
 
 ```{r} {
 library(maps)
@@ -253,7 +274,7 @@ map('worldHires', ylim=c(-35, 60), xlim=c(-20, 50), col=grey(0.7), fill=TRUE, bo
 lines(Coords2plot[,1]~Coords2plot[,2], col='red', lwd=2)
 points(Coords2plot[,1]~Coords2plot[,2], ,lwd=2, col='red', pch=19)
 
-# And nwo I want to set up colors..
+# Here we assign the colours to represent time of the year
 Seasonal_palette<-grDevices::colorRampPalette(grDevices::hsv(1-((1:365)+(365/4))%%365/365, s=0.8, v=0.8), space="Lab")
 
 Seasonal_colors<-Seasonal_palette(12)
