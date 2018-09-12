@@ -130,7 +130,7 @@ When multiple calibration locations are available, each of them has to be proces
 
 A `Calibration` object is compiled with the function`make.calibration` from the created `Calibration periods` data frame and the `FLightR.data` object. 
 ```{r}
-if (run_everything) {
+if (Run_everything) {
     Calibration<-make.calibration(FLightR.data, Calibration.periods, model.ageing=TRUE)
 } else {
     Result<-readRDS(file='./results/Result.RDS')
@@ -195,7 +195,7 @@ Using masks can side track model estimation to the local minima, and we recommen
 At this stage, all the objects, created at earlier steps: the light data with the detected twilight events (`FLightR.data`), the spatial parameters (`Grid`), geographic coordinates of the initial location, where the tracking has started (`start`), and the calibration parameters (`Calibration`), are to be incorporated in one complex object , which will be used in the main run. Use the function `make.prerun.object` for the compilation. Using this function you can also change the priors for the movement model. For example we set `M.mean` parameter to 750 km, because we know that shrikes migrate fast and also because we have explored the results and figured out that average migration distance was actually 750 km.
 
 ```{r}
-if (run_everything) {
+if (Run_everything) {
    # ~ 15 min run time
    all.in<-make.prerun.object(FLightR.data, Grid, start=c(12.23, 55.98),
                               Calibration=Calibration, M.mean=750)
@@ -223,7 +223,7 @@ Within `run.particle.filter`, the following parameters can be defined:
 
 
 ```{r}
-if (run_everything) {
+if (Run_everything) {
 nParticles=1e6
 Result<-run.particle.filter(all.in, threads=-1,
             nParticles=nParticles, known.last=TRUE,
@@ -348,8 +348,8 @@ plot_util_distr(Result,
 
 P.S. The html file from this markdown can be recereated with folloing code
 ```{r eval=FALSE}
-download.file('https://git.io/fAKP5', 'tmp1.rmd', cacheOK = FALSE)
-rmarkdown::render('tmp1.rmd', output_format = 'html_document',
+download.file('https://git.io/fAKP5', 'tmp2.rmd', cacheOK = FALSE)
+rmarkdown::render('tmp2.rmd', output_format = 'html_document',
         output_options=list(toc=TRUE, toc_float=list(collapsed=FALSE)), 
         encoding='utf-8')
 ```
