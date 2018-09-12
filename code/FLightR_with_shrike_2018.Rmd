@@ -304,7 +304,7 @@ points(x=12.23, y=55.98, cex=6, pch=21 , bg=Seasonal_colors[6])
 # dev.off()
 ```
 
-## 7. Getting specific output
+## 8. Getting specific output
 
 The function `find.times.distribution` derives the time at which an animal arrived or departed from the area and provides the measure of its uncertainty. First, select grid points of interest. For example in the current data we are interested in the date when our bird left from the breding grounds and when it was back. We will make  a boundary at 55.5&deg latitude:
 ```{r, eval = F}
@@ -315,7 +315,7 @@ Estimate probabilities of occurrence within the area at each twilight:
 Arrivals.breeding<-find.times.distribution(Result,Index)
 print(Arrivals.breeding)
 ```
-## 7. Visualisation of the results
+## 9. Visualisation of the results
 ### Plot a simple map
 
 Plot a map with the most probable positions, i. e. combinations of the most probable latitude and longitude for each twilight:
