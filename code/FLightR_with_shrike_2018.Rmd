@@ -181,6 +181,7 @@ Now the results are saved as an RData object.
 ## 6. First exploration - plot longitude and latitude
 
 After the analysis finished and results are save the first thing to do is to plot change of longitude and latitude over time. We concider this graph being the most important.
+
 ```{r, eval = F}
 plot_lon_lat(Result)
 ```
@@ -193,28 +194,56 @@ With this graph, please, carefully check whether:
 ## 7. Summary
 
 Function `stationary.migration.summary` tries to distinguish when and where the bird was stationary and when did it move.
+
 ```{r, eval=FALSE}
 # ~ 45 min run time
 Summary<-stationary.migration.summary(Result, prob.cutoff = 0.2)
+```
+To visualise results of this function we will plot them over a map:
 
+```{r} {
+library(maps)
+library(mapdata)
+#pdf('FLightR_shrike_migration_with_stopovers.pdf', width=6, height=9)
+par(mar=c(0,0,0,0))
+map('worldHires', ylim=c(-35, 60), xlim=c(-20, 50), col=grey(0.7), fill=TRUE, border=grey(0.9), mar=rep(0.5, 4), myborder=0)
+
+lines(Coords2plot[,1]~Coords2plot[,2], col='red', lwd=2)
+points(Coords2plot[,1]~Coords2plot[,2], ,lwd=2, col='red', pch=19)
+
+# And nwo I want to set up colors..
+Seasonal_palette<-grDevices::colorRampPalette(grDevices::hsv(1-((1:365)+(365/4))%%365/365, s=0.8, v=0.8), space="Lab")
+
+Seasonal_colors<-Seasonal_palette(12)
+
+Main_stopovers$Main_month<-as.numeric(format(Main_stopovers$Arrival.Q.50+Main_stopovers$stopover_duration/2, format='%m'))
+
+points(Main_stopovers$Medianlat~Main_stopovers$Medianlon, pch=21,  cex=log(as.numeric(Main_stopovers$stopover_duration)), bg=Seasonal_colors[Main_stopovers$Main_month])
+
+# Now, for each of these points we plot the uncertainties
+
+# Horizontal
+segments(y0=Main_stopovers$Medianlat, x0=Main_stopovers$FstQu.lon, x1=Main_stopovers$TrdQu.lon, lwd=2)
+# Vertical
+segments(x0=Main_stopovers$Medianlon, y0=Main_stopovers$FstQu.lat, y1=Main_stopovers$TrdQu.lat, lwd=2)
+
+# and we also need to add breeding site here:
+points(x=12.23, y=55.98, cex=6, pch=21 , bg=Seasonal_colors[6])
+# dev.off()
 ```
 
+## 7. Getting specific output
 
-The function `find.times.distribution` derives the time at which an animal arrived or departed from the area and provides the measure of its uncertainty. First, select grid points of interest. For example in the current data we are interested in the date when our bird left the Netherlands. We will make  a boundary at 2&deg; longitude:
+The function `find.times.distribution` derives the time at which an animal arrived or departed from the area and provides the measure of its uncertainty. First, select grid points of interest. For example in the current data we are interested in the date when our bird left from the breding grounds and when it was back. We will make  a boundary at 55.5&deg latitude:
 ```{r, eval = F}
-Index<-which(Result$Spatial$Grid[,1]>(2))
+Index<-which(Result$Spatial$Grid[,2]>(55))
 ```
 Estimate probabilities of occurrence within the area at each twilight:
 ```{r, eval = F}
-Arrivals.NL<-find.times.distribution(Result,Index)
-Arrivals.NL
-```
-Print a simple summary of the periods of residence and movement:
-```{r, eval = F}
-stationary.migration.summary(Result, prob.cutoff = 0.1, min.stay = 3)
+Arrivals.breeding<-find.times.distribution(Result,Index)
+print(Arrivals.breeding)
 ```
 ## 7. Visualisation of the results
-
 ### Plot a simple map
 
 Plot a map with the most probable positions, i. e. combinations of the most probable latitude and longitude for each twilight:
