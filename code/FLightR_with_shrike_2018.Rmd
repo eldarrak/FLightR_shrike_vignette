@@ -275,6 +275,8 @@ To visualise results of this function we will plot them on a map:
 ```{r} {
 library(maps)
 library(mapdata)
+library(devtools)
+install_github('dkahle/ggmap')
 #pdf('FLightR_shrike_migration_with_stopovers.pdf', width=6, height=9)
 par(mar=c(0,0,0,0))
 map('worldHires', ylim=c(-35, 60), xlim=c(-20, 50), col=grey(0.7),
@@ -324,7 +326,8 @@ print(Arrivals.breeding)
 
 Plot a map with the most probable positions, i. e. combinations of the most probable latitude and longitude for each twilight:
 ```{r}
-map.FLightR.ggmap(Result)
+library(grid)
+map.FLightR.ggmap(Result, zoom=3)
 ```
 
 ### Plot utilization distribution
