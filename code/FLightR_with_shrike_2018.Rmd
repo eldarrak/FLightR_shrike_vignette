@@ -231,7 +231,7 @@ Now the results are saved as an RData object.
 
 ## 6. First exploration - plot longitude and latitude
 
-After the results are saved the first thing to do is to plot change of longitude and latitude over time. We concider this graph being the most important.
+After the results have been saved the first thing to do is to plot change of longitude and latitude over time. This is a very important graph.
 
 ```{r, eval = F}
 plot_lon_lat(Result)
