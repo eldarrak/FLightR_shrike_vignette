@@ -83,13 +83,6 @@ _We need reference to Lykke here_
 
 The original file is available [here](https://git.io/fAoHq) and the annotated file in tags format [here](https://git.io/fAoHs).
 
-```{r, eval=FALSE, tidy=FALSE}
-if (Use_local_data) {
-
-)
-download.file('https://git.io/fAoHs', 'shrike_data_TAGS_format.csv')
-
-```
 The function `get.tags.data` reads comma separated file in the TAGS format, detects the tag type, checks whether the light data are log-transformed, transforms them back from the log scale if needed and creates an object, containing 
 
 * the recorded light data,
@@ -172,8 +165,7 @@ Calibration.periods<-data.frame(
 We ran the full estimation procedure with based on this short calibration. Looked at bird  departure and arrival dates from and to breeding site (with simple `plot_lon_lat(Result)`), used these dates to create new calibration periods and to run the final analysis. If you will do the same, please note, that you should select edges of the calibration period on a safe side - at least 24 hours before the migration.
 
 ### Find a calibration location for a known calibration period
-It may happen that an animal was tagged in the High Arctic under polar day conditions or that it moved far away from the capture site immedialtly after tagging and the roof-top calibration data are not available. Even in such cases it is still possibe to obtain calibration parameters for a resident period at unknown location. FLightR approach to this problem is similar to Hill-Ekstrom calibration [
-[Lisovski et al. 2012b](#lisovski_2012b) implemented in GeoLight [Lisovksi et al. 2012a](#lisovski_2012a). If bird is assumed to be resident at some period one can try:
+It may happen that an animal was tagged in the High Arctic under polar day conditions or that it moved far away from the capture site immedialtly after tagging and the roof-top calibration data are not available. Even in such cases it is still possibe to obtain calibration parameters for a resident period at unknown location. FLightR approach to this problem is similar to Hill-Ekstrom calibration [Lisovski et al. 2012b](#lisovski_2012b) implemented in GeoLight [Lisovksi et al. 2012a](#lisovski_2012a). If bird is assumed to be resident at some period one can try:
 ```{r, eval=FALSE}
 # ~ 15 min run time
 Location<-find.stationary.location(FLightR.data, '2014-09-05', '2014-10-07',
