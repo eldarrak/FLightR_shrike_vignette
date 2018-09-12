@@ -96,7 +96,7 @@ When multiple calibration locations are available, each of them has to be proces
 
 A 'Calibration' object is compiled with the function`make.calibration` from the created `Calibration periods` data frame and the `Proc.data` object. 
 ```{r, eval = F}
-Calibration<-make.calibration(Proc.data, Calibration.periods)
+Calibration<-make.calibration(FLightR.data, Calibration.periods, model.ageing=TRUE)
 ```
 This object contains all the calibration parameters for the tag, and it will be further used for calculation of geographic positions across the track. When there are more than one calibration periods, the parameter `model.ageing` can be set `TRUE` to account for the tag ageing. In this case, the calibration parameters are calculated, based on the assumption that the calibration slope changes linearly with time. Alternatively - one can use one very long calibration perid to try estimating ageing of the tag. We would reccommend to have at least two months in a known location to be able to do that.
 
@@ -123,7 +123,7 @@ Calibration.periods<-data.frame(
         lon=12.23, lat=55.98) 
 ```
 
-We ran the full estiamtion procedure with based on this short calibration. Looked at bird  departure and arrival dates from and to breeding site (with simple `plot_lon_lat(Result)`), used these dates to create new calibration periods and to run the final analysis. If you will do the same, please note, that you should select edges of the calibration period on a safe side - at least 24 hours before the migration.
+We ran the full estimation procedure with based on this short calibration. Looked at bird  departure and arrival dates from and to breeding site (with simple `plot_lon_lat(Result)`), used these dates to create new calibration periods and to run the final analysis. If you will do the same, please note, that you should select edges of the calibration period on a safe side - at least 24 hours before the migration.
 
 ### Find a calibration location for a known calibration period
 It may happen that an animal was tagged in the High Arctic under polar day conditions or that it moved far away from the capture site immedialtly after tagging and the roof-top calibration data are not available. Even in such cases it is still possibe to obtain calibration parameters for a resident period at unknown location. FLightR approach to this problem is similar to Hill-Ekstrom calibration [
@@ -133,16 +133,20 @@ It may happen that an animal was tagged in the High Arctic under polar day condi
 Location<-find.stationary.location(FLightR.data, '2014-09-05', '2014-10-07',
                                    initial.coords=c(25, -10))
 ```
-The function will return geographic coordinates of the location for which the range of errors in slopes is minimal. User has to provide the initial coordinates, which should be within a few thousand kilometers from the hypothetical real location.
+After 15 minutes the function will return geographic coordinates of the location for which the range of errors in slopes is minimal. User has to provide the initial coordinates, which should be within a few thousand kilometers from the hypothetical real location.
+
+_Note that this function is experimental and does not always produce meaningful results . Try it from different initial locations, and check whether it gets to the same result.
 
 ## 3. Assign spatial extent
 
 The function `make.grid` sets up a spatial grid (50 X 50 km on default) delimited by user-defined boundaries: `left`, `right`. `bottom` and `top`. When the tagged animal cannot occur or stay between two subsequent twilights over particular areas, e.g. open water for a landbird or deep inland for a marine animal, additional parameters `distance.from.land.allowed.to.use` and `distance.from.land.allowed.to.stay` can be specified. Each of the parameters require a vector of two numbers: the minimal and the maximal distances (in km) from shoreline, at which the animal is allowed to occur/stay.
-```{r, eval = F}
-Grid<-make.grid(left=-14, bottom=30, right=13, top=57,
-   distance.from.land.allowed.to.use=c(-Inf, Inf),
-   distance.from.land.allowed.to.stay=c(-Inf, Inf))
+In the current case we want to allow our shrike to fly over water (no further than 200 km offshore and to be statuionary within 50 km from land).
+```{r}
+Grid<-make.grid(left=5, bottom=-33, right=50, top=60,
+   distance.from.land.allowed.to.use=c(-Inf, 200),
+   distance.from.land.allowed.to.stay=c(-Inf, 50))
 ```
+The function produces an visual represnetation of the created grid with orange poins where bird is allowed to be stationary and grey, where bird can fly but not stay. Have a look at the figure and think twice if you gris is correct.
 The resulting `Grid` is a matrix with the columns: `lon` (longitude), `lat` (latitude) and `Stay` (probability of stay). The grid cells, which the animal presumably cannot use, are excluded from the data, while the locations at which an animal cannot be stationary are given a low probability of stay. Using masks can side track model estimation to the local minima, and we recommend to initially run model without a mask, enable them for the second run and visually compare the results, to see if the model converges to a similar track.
 
 ## 4. Prepare the model for run
