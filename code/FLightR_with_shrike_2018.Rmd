@@ -270,6 +270,7 @@ if (Run_everything) {
 } else {
    Summary<-readRDS(file='./results/Summary.RDS')
 }
+```
 To visualise results of this function we will plot them on a map:
 
 ```{r} {
