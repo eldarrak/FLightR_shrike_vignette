@@ -42,6 +42,7 @@ if (Use_local_data) {
 } else {
    if (!'results' %in% list.dirs(full.names=FALSE, recursive=FALSE)) dir.create('results')
    download.file('https://git.io/fAKZH', destfile='./results/Result.RDS', mode='wb')
+   download.file('https://git.io/fAK15', destfile='./results/Summary.RDS', mode='wb')
 }
 if (Use_local_data & !'data' %in% list.dirs(full.names=FALSE, recursive=FALSE)) stop('data directory not found') 
 ```
@@ -90,7 +91,7 @@ The function `get.tags.data` reads comma separated file in the TAGS format, dete
 * technical parameters of the tag, added automatically, unless preset by the user.
 
 The finction works with all the common tag types: mk tags (produced by British Antarctic Survey, Lotek, and Migrate Technology Ltd.), Intigeo tags (Migrate technology Ltd.) and GDL tags (Swiss Ornithological Institute).
-```{r, eval=FALSE, tidy=FALSE}
+```{r, tidy=FALSE}
 if (use_local_data) {
    FLightR.data<-get.tags.data("./data/TAGS.M034_08jun15_135409driftadj.csv")
 } else {
@@ -109,7 +110,7 @@ To calculate the calibration parameters user needs to create a data frame where 
 * `lat` (numeric)
 The data frame contains as many rows as many distinct calibration periods the track contains. 
 
-```{r, eval = F}
+```{r}
 Calibration.periods<-data.frame(
         calibration.start=as.POSIXct(c(NA, '2015-05-15')),
         calibration.stop=as.POSIXct(c('2014-07-15', NA)),
@@ -128,7 +129,7 @@ In this example, we have two calibration periods in the same location, at the be
 When multiple calibration locations are available, each of them has to be processed with the function `plot_slopes_by_location`.  In this case, in the `Calibration periods` data frame, each row should refer to one calibration period. Compiling the data frame with multiple calibration locations, use `c()` also for the geographic coordinates (e. g., `lon=c(5.43, 6.00), lat=c(52.93,52.94)`).
 
 A `Calibration` object is compiled with the function`make.calibration` from the created `Calibration periods` data frame and the `FLightR.data` object. 
-```{r, eval = F}
+```{r}
 if (run_everything) {
     Calibration<-make.calibration(FLightR.data, Calibration.periods, model.ageing=TRUE)
 } else {
@@ -193,7 +194,7 @@ Using masks can side track model estimation to the local minima, and we recommen
 
 At this stage, all the objects, created at earlier steps: the light data with the detected twilight events (`FLightR.data`), the spatial parameters (`Grid`), geographic coordinates of the initial location, where the tracking has started (`start`), and the calibration parameters (`Calibration`), are to be incorporated in one complex object , which will be used in the main run. Use the function `make.prerun.object` for the compilation. Using this function you can also change the priors for the movement model. For example we set `M.mean` parameter to 750 km, because we know that shrikes migrate fast and also because we have explored the results and figured out that average migration distance was actually 750 km.
 
-```{r, eval = F}
+```{r}
 if (run_everything) {
    # ~ 15 min run time
    all.in<-make.prerun.object(FLightR.data, Grid, start=c(12.23, 55.98),
@@ -238,7 +239,7 @@ Result<-run.particle.filter(all.in, threads=-1,
 
 After the results have been saved the first thing to do is to plot change of longitude and latitude over time. This is a very important graph.
 
-```{r, eval = F}
+```{r}
 plot_lon_lat(Result)
 ```
 With this graph, please, carefully check whether:
@@ -263,9 +264,12 @@ Our shrike had rather distinct migration/stopover pattern. However, we get a sli
 
 To distinguish between the phases of  movement and stationarity use the function `stationary.migration.summary` helps . The process usually takes around 15 minutes of computer time.
 
-```{r, eval=FALSE}
-Summary<-stationary.migration.summary(Result, prob.cutoff = 0.2)
-```
+if (Run_everything) {
+   Summary<-stationary.migration.summary(Result, prob.cutoff = 0.2)
+   saveRDS(Summary, file='./results/Summary.RDS')
+} else {
+   Summary<-readRDS(file='./results/Summary.RDS')
+}
 To visualise results of this function we will plot them on a map:
 
 ```{r} {
@@ -307,11 +311,11 @@ points(x=12.23, y=55.98, cex=6, pch=21 , bg=Seasonal_colors[6])
 ## 8. Getting specific output
 
 The function `find.times.distribution` derives the time at which an animal arrived or departed from the area and provides the measure of its uncertainty. First, select grid points of interest. For example in the current data we are interested in the date when our bird left from the breding grounds and when it was back. We will make  a boundary at 55.5&deg latitude:
-```{r, eval = F}
+```{r}
 Index<-which(Result$Spatial$Grid[,2]>55)
 ```
 Estimate probabilities of occurrence within the area at each twilight:
-```{r, eval = F}
+```{r}
 Arrivals.breeding<-find.times.distribution(Result,Index)
 print(Arrivals.breeding)
 ```
@@ -319,22 +323,17 @@ print(Arrivals.breeding)
 ### Plot a simple map
 
 Plot a map with the most probable positions, i. e. combinations of the most probable latitude and longitude for each twilight:
-```{r, eval = F}
+```{r}
 map.FLightR.ggmap(Result)
 ```
-### Plot lon lat graph
 
-Plot the estimated for each twilight probabilities of an animal to occur at particular latitude and longitude:
-```{r, eval = F}
-plot_lon_lat(Result)
-```
 ### Plot utilization distribution
 
 Plot space utilisation distribution for the wintering range:
-```{r, eval = F}
+```{r}
 plot_util_distr(Result, 
-    dates=data.frame(as.POSIXct('2013-12-01'), as.POSIXct('2014-01-31')),
-    add.scale.bar=TRUE, percentiles=0.5)
+    dates=data.frame(as.POSIXct('2014-12-01'), as.POSIXct('2015-01-31')),
+    add.scale.bar=TRUE, percentiles=0.5, zoom=7)
 ```
 
 ## References
@@ -349,8 +348,8 @@ plot_util_distr(Result,
 
 P.S. The html file from this markdown can be recereated with folloing code
 ```{r eval=FALSE}
-download.file('https://git.io/fAKP5', 'tmp.rmd', cacheOK = FALSE)
-rmarkdown::render('tmp.rmd', output_format = 'html_document',
+download.file('https://git.io/fAKP5', 'tmp1.rmd', cacheOK = FALSE)
+rmarkdown::render('tmp1.rmd', output_format = 'html_document',
         output_options=list(toc=TRUE, toc_float=list(collapsed=FALSE)), 
         encoding='utf-8')
 ```
