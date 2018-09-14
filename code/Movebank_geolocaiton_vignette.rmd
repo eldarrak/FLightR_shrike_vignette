@@ -24,9 +24,7 @@ Let's find out how many solar geolcoaiton studies are available on Movebank. Fir
 ```
 getMovebankSensors(login=loginStored)
 ```
-The geolocator data have sensor types 9301403 for raw geolocator data and 3886361 for processed data.
-
-# How many studies in total we can get to?
+The geolocator data have sensor types 9301403 for raw geolocator data and 3886361 for processed data. How many studies in total we can get to?
 
 ```{r}
 All1<-getMovebank("study", login=loginStored)
