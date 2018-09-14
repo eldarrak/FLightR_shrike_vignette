@@ -45,7 +45,7 @@ nrow(All1)
 
 Now for each study I will get sensors that it used. The following loop goes through all the studies you have permission to see and checks whether the tag type is one of two - 'solar geolocation raw' or 'solar geolocation'.
 
-```{r result=FALSE} 
+```{r results=FALSE} 
 Res<-c()
 Geolocator_studies<-c()
 for ( i in 1:nrow(All1)) {
