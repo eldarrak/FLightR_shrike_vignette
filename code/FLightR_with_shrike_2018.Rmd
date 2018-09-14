@@ -380,7 +380,7 @@ Note, that we use `try` here to ease automated rendering. Just exclude it for yo
 1. Rakhimberdiev, E., Senner, N. R., Verhoeven, M. A., Winkler, D. W., Bouten, W. and Piersma T. (2016) Comparing inferences of solar geolocation data against high-precision GPS data: annual movements of a double-tagged Black-Tailed Godwit. Journal of Avian Biology 47: 589-596.<a id="rakhimberdiev_jab_2016"></a>
 1. Rakhimberdiev, E., Saveliev, A., Piersma, T., & Karagicheva, J. (2017). FLightR: An R package for reconstructing animal paths from solar geolocation loggers. Methods in Ecology and Evolution, 8(11), 1482-1487.<a id="rakhimberdiev_mee_2017"></a>
 
-P.S. The html file from this markdown can be recereated with folloing code
+P.S. The html file from this markdown can be rebuilt with following code
 ```{r eval=FALSE}
 download.file('https://git.io/fAKP5', 'tmp2.rmd', cacheOK = FALSE)
 rmarkdown::render('tmp2.rmd', output_format = 'html_document',

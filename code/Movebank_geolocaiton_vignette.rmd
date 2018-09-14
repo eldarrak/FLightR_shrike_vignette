@@ -1,3 +1,14 @@
+---
+title: "Solar Geolocation data on Movebank"
+author: "Eldar Rakhimberdiev"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Solar Geolocation data on Movebank}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
 ## Solar geolocation data on Movebank
 
 Movebank, a depository specialised on the movement data, has a specialised R package [move](https://cran.r-project.org/web/packages/move/index.html).
@@ -13,7 +24,7 @@ library(move)
 
 Movebank allows users to see the data only when they are logged in, so one needs to enter his/her credentials otherwise the rest of the script will not work.
 
-```{r}
+```{r eval=F}
 loginStored <- movebankLogin(username="user", password="password")
 ```
 
@@ -34,7 +45,7 @@ nrow(All1)
 
 Now for each study I will get sensors that it used. The following loop goes through all the studies you have permission to see and checks whether the tag type is one of two - 'solar geolocation raw' or 'solar geolocation'.
 
-```{r} 
+```{r result=FALSE} 
 Res<-c()
 Geolocator_studies<-c()
 for ( i in 1:nrow(All1)) {
@@ -85,6 +96,8 @@ The_swallow <- getMovebankNonLocationData(study=242477586 , sensorID=9301403,
 # or we can do the same by the animal name.
 The_swallow <- getMovebankNonLocationData(study=242477586 , sensorID=9301403,
                animalName='H974' , login=loginStored)
+			   
+head(The_swallow)			   
 ```
 These data are not annotated, but can be saved as .csv and reused.
 
@@ -95,6 +108,10 @@ All_data<-getDataRepositoryData("http://dx.doi.org/10.5441/001/1.rt00m81v")
 ```
 After download data can be plotted or reanalysed.
 
-
-         
-
+P.S. The html file from this markdown can be rebuilt with following code
+```{r eval=FALSE}
+download.file('https://git.io/fAP3J', 'Movebank_geolocaiton_vignette.rmd', cacheOK = FALSE)
+rmarkdown::render('Movebank_geolocaiton_vignette.rmd', output_format = 'html_document',
+        output_options=list(toc=TRUE, toc_float=list(collapsed=FALSE)), 
+        encoding='utf-8')
+```
