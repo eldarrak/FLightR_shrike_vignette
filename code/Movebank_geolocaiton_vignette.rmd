@@ -1,0 +1,102 @@
+## Solar geolocation data on Movebank
+
+Movebank, a depository specialised on the movement data, has a specialised R package [move](https://cran.r-project.org/web/packages/move/index.html).
+
+We will use this package to explore solar geolocation data stored there.
+
+### 0. Setting up
+
+``` {r}
+install.packages('move')
+library(move)
+```
+
+Movebank allows users to see the data only when they are logged in, so one needs to enter his/her credentials otherwise the rest of the script will not work.
+
+```{r}
+loginStored <- movebankLogin(username="user", password="password")
+```
+
+### 1. What is available?
+
+Let's find out how many solar geolcoaiton studies are available on Movebank. First we figure out what are the sensor typers we need to look for.
+
+```
+getMovebankSensors(login=loginStored)
+```
+The geolocator data have sensor types 9301403 for raw geolocator data and 3886361 for processed data.
+
+# How many studies in total we can get to?
+
+```{r}
+All1<-getMovebank("study", login=loginStored)
+nrow(All1) 
+``` 
+2577 studies at the moment (2018-09-13)
+
+Now for each study I will get sensors that it used. The following loop goes through all the studies you have permission to see and checks whether the tag type is one of two - 'solar geolocation raw' or 'solar geolocation'.
+
+```{r} 
+Res<-c()
+Geolocator_studies<-c()
+for ( i in 1:nrow(All1)) {
+   Try<-getMovebankSensors(study=All1$id[i], login=loginStored)
+   if (nrow(Try)>0) {
+      if (9301403 %in% unique(Try[,2]) | 3886361 %in% unique(Try[,2])) {
+	     Geolocator_studies<-c(Geolocator_studies, All1$id[i])
+	     Res<-rbind(Res, Try[which(Try[,2] %in% c(9301403, 3886361)),])
+		 	cat('!!\n')
+	  }
+   }
+cat('\r', i)
+}
+
+print(length(Geolocator_studies))
+
+print(table(Res$sensor_type_id))
+```
+
+At the moment we have only 25 geolocator studies on movebank so far and they have 353 raw data files and 480 processed results with coordinates.
+
+### 2. Download some data
+
+First we check which studies we can actually see.
+
+```{r}
+Downloadable_studies<-subset(All1, All1$id %in% Geolocator_studies &  All1$i_can_see_data =='true')
+nrow(Downloadable_studies)
+```
+
+Now we download data from a sample study with id 242477586. First check the license on this study.
+```{r}
+print(All1[All1$id==242477586,]$license_terms)
+print(All1[All1$id==242477586,]$principal_investigator_name)
+```
+
+How many tags are in this study?
+
+```{r}
+Barn_swallows<-getMovebankSensors(study=242477586, login=loginStored)
+nrow(Barn_swallows)
+head(Barn_swallows)
+```
+There are 18 tags in this study. We now pick the first one and downlaod it.
+```{r}
+The_swallow <- getMovebankNonLocationData(study=242477586 , sensorID=9301403,
+               tag_id=242495280 , login=loginStored)
+# or we can do the same by the animal name.
+The_swallow <- getMovebankNonLocationData(study=242477586 , sensorID=9301403,
+               animalName='H974' , login=loginStored)
+```
+These data are not annotated, but can be saved as .csv and reused.
+
+We can also download all the data from a study with the following line:
+```{r}
+# Note - ~10 min to run
+All_data<-getDataRepositoryData("http://dx.doi.org/10.5441/001/1.rt00m81v")
+```
+After download data can be plotted or reanalysed.
+
+
+         
+
